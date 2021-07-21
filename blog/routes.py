@@ -23,6 +23,7 @@ def index():
 
 
 @app.route("/delete/<int:entry_id>", methods=["POST"])
+@login_required
 def delete_entry(entry_id=None):
     if entry_id:
         entry = Entry.query.filter_by(id=entry_id).delete()
@@ -45,7 +46,9 @@ def create_entry(entry_id=None):
                 db.session.commit()
             else:
                 errors = form.errors
+        return render_template("entry_form.html", form=form, errors=errors)
     else:
+        id = 1
         form = EntryForm()
         if form:
             errors = None
@@ -59,9 +62,10 @@ def create_entry(entry_id=None):
                     db.session.add(entry)
                     db.session.commit()
                     flash(f'Publikacja wpisu powiodła się!')
+                    return redirect("/edit-post/" + str(entry.id))
                 else:
                     errors = form.errors
-    return render_template("entry_form.html", form=form, errors=errors)
+        return render_template("entry_form.html", form=form, errors=errors)
 
 
 @app.route("/login/", methods=['GET', 'POST'])
