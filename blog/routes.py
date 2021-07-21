@@ -48,7 +48,6 @@ def create_entry(entry_id=None):
                 errors = form.errors
         return render_template("entry_form.html", form=form, errors=errors)
     else:
-        id = 1
         form = EntryForm()
         if form:
             errors = None
