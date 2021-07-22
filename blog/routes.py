@@ -12,7 +12,6 @@ def login_required(view_func):
         if session.get('logged_in'):
             return view_func(*args, **kwargs)
         return redirect(url_for('login', next=request.path))
-
     return check_permissions
 
 
@@ -39,38 +38,31 @@ def create_entry(entry_id=None):
     if entry_id:
         entry = Entry.query.filter_by(id=entry_id).first_or_404()
         form = EntryForm(obj=entry)
-        errors = None
         if request.method == 'POST':
             if form.validate_on_submit():
                 form.populate_obj(entry)
                 db.session.commit()
-            else:
-                errors = form.errors
-        return render_template("entry_form.html", form=form, errors=errors)
+        return render_template("entry_form.html", form=form)
     else:
         form = EntryForm()
-        if form:
-            errors = None
-            if request.method == 'POST':
-                if form.validate_on_submit():
-                    entry = Entry(
-                        title=form.title.data,
-                        body=form.body.data,
-                        is_published=form.is_published.data
-                    )
-                    db.session.add(entry)
-                    db.session.commit()
-                    flash(f'Publikacja wpisu powiodła się!')
-                    return redirect("/edit-post/" + str(entry.id))
-                else:
-                    errors = form.errors
-        return render_template("entry_form.html", form=form, errors=errors)
+        if request.method == 'POST':
+            if form.validate_on_submit():
+                entry = Entry(
+                    title=form.title.data,
+                    body=form.body.data,
+                    is_published=form.is_published.data
+                )
+                db.session.add(entry)
+                db.session.commit()
+                flash(f'Publikacja wpisu powiodła się!')
+                return redirect("/edit-post/" + str(entry.id))
+        return render_template("entry_form.html", form=form)
 
 
 @app.route("/login/", methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-    errors = None
+
     next_url = request.args.get('next')
     if request.method == 'POST':
         if form.validate_on_submit():
@@ -78,9 +70,7 @@ def login():
             session.permanent = True  # Use cookie to store session.
             flash('You are now logged in.', 'success')
             return redirect(next_url or url_for('index'))
-        else:
-            errors = form.errors
-    return render_template("login_form.html", form=form, errors=errors)
+    return render_template("login_form.html", form=form)
 
 
 @app.route('/logout/', methods=['GET', 'POST'])
